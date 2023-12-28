@@ -1,6 +1,7 @@
 @echo off
 
-set var=%date%
+set var=%date%-%time%
+set var=%var: =%
 
 git pull origin main
 git add update.bat
