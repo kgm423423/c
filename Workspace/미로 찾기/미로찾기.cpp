@@ -57,7 +57,14 @@ void mapLoad()
 
     for(int i=yStart; i<=yEnd; i++) {
         for(int j = xStart; j<=xEnd; j++) {
-            printf("%d", mapArr[i][j]);
+            switch (mapArr[i][j]) {
+                case 0:
+                printf("0");
+                break;
+                case 1:
+                printf("p");
+                break;
+            }
         }
         printf("\n");
     }
@@ -70,7 +77,6 @@ int main()
     while (true) {
         mapLoad();
         input();
-
     }
 
 
