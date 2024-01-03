@@ -10,9 +10,9 @@ struct pos
 };
 
 const int mapSize = 10;
-int eyesight = 3;
-int mapArr[mapSize][mapSize] = {};
-struct pos player = {0,0};
+int eyesight = 100;
+int mapArr[(mapSize*2)+1][(mapSize*2)+1] = {};
+struct pos player = {1,1};
 
 void input()
 {
