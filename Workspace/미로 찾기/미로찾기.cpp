@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
 using namespace std;
 
@@ -12,6 +13,8 @@ enum Tag
     Tag_wall,
     Tag_player,
     Tag_endPoint,
+    Tag_item_eyelevelUp,
+    Tag_enemy,
 };
 
 struct Pos
@@ -21,13 +24,20 @@ struct Pos
 
 };
 
-int mapSize = 2;
+int debug=0;
+
+int chance = 0;
+int mapSize = 1;
 int mazeSize;
-int eyesight = 1000;
+int eyelevel = 3;
 bool mapMade = false;
+bool gameover = false;
+
 
 Tag** mapArr;
-struct Pos playerPos;
+Pos playerPos;
+Pos enemyPos;
+vector<Pos> route;
 
 bool makeMaze(int i, int j, bool** checkArr)
 {
@@ -51,25 +61,47 @@ bool makeMaze(int i, int j, bool** checkArr)
 
     int ii = (i*2)+1;
     int jj = (j*2)+1;
+    int corner = 0;
 
     for(int inex=0;inex<4;inex++) {
         switch(order[inex]){
         case 1:
-            mapArr[ii+1][jj] = makeMaze(i+1,j, checkArr) ? Tag_none : Tag_wall;
+            if (makeMaze(i+1,j, checkArr)) {
+                mapArr[ii+1][jj] = Tag_none;
+            }
+            else
+                corner++;
             break;
         case 2:
-            mapArr[ii][jj+1] = makeMaze(i,j+1, checkArr) ? Tag_none : Tag_wall;
+            if (makeMaze(i,j+1, checkArr)) {
+                mapArr[ii][jj+1] = Tag_none;
+            }
+            else
+                corner++;
             break;
         case 3:
-            mapArr[ii-1][jj] = makeMaze(i-1,j, checkArr) ? Tag_none : Tag_wall;
+            if (makeMaze(i-1,j, checkArr)) {
+                mapArr[ii-1][jj] = Tag_none;
+            }
+            else
+                corner++;
             break;
         case 4:
-            mapArr[ii][jj-1] = makeMaze(i,j-1, checkArr) ? Tag_none : Tag_wall;
+            if (makeMaze(i,j-1, checkArr)) {
+                mapArr[ii][jj-1] = Tag_none;
+            }
+            else
+                corner++;
             break;
         }
     }
 
-    printf("test4\n");
+    if (corner == 4) {
+        int randum = rand()%10;
+
+        if (randum == 0 || randum == 1)
+            mapArr[ii][jj] = Tag_item_eyelevelUp;
+    }
 
     return true;
 }
@@ -113,7 +145,6 @@ void makeMap()
         }
 
     ///미로 생성
-    printf("test1\n");
     makeMaze(1,1, checkArr);
     mapArr[1][1] = Tag_player;
     mapArr[mazeSize-1][mazeSize-2] = Tag_endPoint;
@@ -125,64 +156,74 @@ void playerMove(Pos nextPos)
         return;
     else if (mapArr[nextPos.y][nextPos.x] == Tag_wall)
         return;
-    else
-        playerPos = nextPos;
+    else if (mapArr[nextPos.y][nextPos.x] == Tag_item_eyelevelUp)
+        eyelevel++;
+
+    playerPos = nextPos;
 }
 
 void input()
 {
-    char key = '\0';
-    key = _getch();
+    int key = _getch();
 
-    if (key != '\0') {
-        mapArr[playerPos.y][playerPos.x] = Tag_none;
+    mapArr[playerPos.y][playerPos.x] = Tag_none;
+	if (key == 224) {
+		key = _getch();
+		switch (key) {
+        case 72: playerMove({playerPos.x, playerPos.y-1}); break;
+        case 75: playerMove({playerPos.x-1, playerPos.y}); break;
+        case 77: playerMove({playerPos.x+1, playerPos.y}); break;
+        case 80: playerMove({playerPos.x, playerPos.y+1}); break;
+		}
+	}
+    else {
+        ///영문 입력
         switch (key) {
-        case 'w':
-            playerMove({playerPos.x, playerPos.y-1});
-        break;
-        case 'a':
-            playerMove({playerPos.x-1, playerPos.y});
-        break;
-        case 's':
-            playerMove({playerPos.x, playerPos.y+1});
-        break;
-        case 'd':
-            playerMove({playerPos.x+1, playerPos.y});
-        break;
+        case 'w': playerMove({playerPos.x, playerPos.y-1}); break;
+        case 'a': playerMove({playerPos.x-1, playerPos.y}); break;
+        case 'd': playerMove({playerPos.x+1, playerPos.y}); break;
+        case 's': playerMove({playerPos.x, playerPos.y+1}); break;
         }
-
-        mapArr[playerPos.y][playerPos.x] = Tag_player;
     }
 
+    mapArr[playerPos.y][playerPos.x] = Tag_player;
 }
 
 void drawMap()
 {
-    system("cls");
-
-    int xStart = playerPos.x - eyesight < 0 ? 0 : playerPos.x - eyesight;
-    int xEnd = playerPos.x + eyesight > mazeSize-1 ? mazeSize-1 : playerPos.x + eyesight;
-    int yStart = playerPos.y - eyesight < 0 ? 0 : playerPos.y - eyesight;
-    int yEnd = playerPos.y + eyesight > mazeSize-1 ? mazeSize-1 : playerPos.y + eyesight;
+    int xStart = playerPos.x - eyelevel < 0 ? 0 : playerPos.x - eyelevel;
+    int xEnd = playerPos.x + eyelevel > mazeSize-1 ? mazeSize-1 : playerPos.x + eyelevel;
+    int yStart = playerPos.y - eyelevel < 0 ? 0 : playerPos.y - eyelevel;
+    int yEnd = playerPos.y + eyelevel > mazeSize-1 ? mazeSize-1 : playerPos.y + eyelevel;
 
     for(int i=yStart; i<=yEnd; i++) {
         for(int j = xStart; j<=xEnd; j++) {
             switch (mapArr[i][j]) {
                 case Tag_none:
-                printf("\033[38;2;%d;%d;%dm", 0, 0, 0);
-                printf("0 ");
+                printf("  ");
                 break;
                 case Tag_wall:
-                printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
-                printf("0 ");
+                if (chance == 0)
+                    printf("\033[38;2;%d;%d;%dm", 155, 0, 0);
+                else
+                    printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
+                printf("1 ");
                 break;
                 case Tag_player:
-                printf("\033[38;2;%d;%d;%dm", 255, 0, 0);
+                printf("\033[38;2;%d;%d;%dm", 0, 255, 255);
                 printf("p ");
                 break;
                 case Tag_endPoint:
-                printf("\033[38;2;%d;%d;%dm", 50, 255, 255);
+                printf("\033[38;2;%d;%d;%dm", 0, 255, 255);
                 printf("e ");
+                break;
+                case Tag_item_eyelevelUp:
+                printf("\033[38;2;%d;%d;%dm", 0, 255, 255);
+                printf("i ");
+                break;
+                case Tag_enemy:
+                printf("\033[38;2;%d;%d;%dm", 255, 0, 0);
+                printf("x ");
                 break;
             }
         }
@@ -190,30 +231,83 @@ void drawMap()
     }
 }
 
+void drawUI()
+{
+    system("cls");
+
+    printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
+    printf("[Stage : %d]\n\n",mapSize);
+    printf("%d\n",debug);
+
+    drawMap();
+}
+
+void enemyMove()
+{
+    ///이동경로 지정
+    route.push_back(playerPos);
+    Pos currentPos;
+
+    if (route.size() > 1) {
+        currentPos = route[route.size()-2];
+        if (playerPos.x == currentPos.x && playerPos.y == currentPos.y)
+            route.pop_back();
+    }
+    if (route.size() > 2) {
+        currentPos = route[route.size()-3];
+        if (playerPos.x == currentPos.x && playerPos.y == currentPos.y) {
+            route.pop_back();
+            route.pop_back();
+        }
+    }
+
+    if (chance != 0)
+        return;
+
+    ///이동
+    currentPos = route.front();
+    route.erase(route.begin());
+
+    mapArr[enemyPos.y][enemyPos.x] = Tag_none;
+    mapArr[currentPos.y][currentPos.x] = Tag_enemy;
+    enemyPos.x = currentPos.x; enemyPos.y = currentPos.y;
+
+    ///게임오버
+    if (playerPos.x == enemyPos.x && playerPos.y == enemyPos.y)
+        gameover = true;
+}
+
 int main()
 {
     srand((unsigned int)time(NULL));
     mazeSize = (mapSize*2)+1;
 
-    while (true) {
+
+    do {
+        chance = 100;
         makeMap();
         playerPos = {1,1};
-        drawMap();
+        enemyPos = {1,1};
+        route.clear();
+        drawUI();
 
-        while (playerPos.x != mazeSize-2 || playerPos.y != mazeSize-1) {
-            drawMap();
+        while (playerPos.x != mazeSize-2 || playerPos.y != mazeSize-1 && !gameover) {
             input();
+            enemyMove();
+            drawUI();
+            debug = chance;
+            chance = chance == 0 ? 0 : chance-1;
         }
 
         mapSize++;
         mazeSize = (mapSize*2)+1;
-    }
+    } while (!gameover);
 
+    system("cls");
 
-
-
-
-
+    printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
+    printf("Gameover\n");
+    printf("[Max Stage : %d]\n\n",mapSize-1);
 
     return 0;
 }
