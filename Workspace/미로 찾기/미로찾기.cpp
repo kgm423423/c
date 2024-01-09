@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <mmsystem.h>
+#pragma comment(lib,"winmm.lib")
 
 using namespace std;
 
