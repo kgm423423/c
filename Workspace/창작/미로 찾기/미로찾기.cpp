@@ -235,6 +235,7 @@ void drawMap()
 
 void drawUI()
 {
+
     system("cls");
 
     printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
