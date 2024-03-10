@@ -1,30 +1,20 @@
 #include <stdio.h>
 #include <iostream>
-#include <conio.h>
-#include <vector>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
-struct Pos
+int main()
 {
-    int x;
-    int y;
-};
+    bool i = true;
 
-vector<Pos> route;
 
-int main() {
+    bool j = true;
 
-    route.push_back({0,0});
-    route.push_back({1,1});
-
-    route.erase(route.begin());
-
-    Pos nextPos = route[route.size()-1];
-
-    printf("%d %d %d", nextPos.x, nextPos.y, route.size());
+    cout << i+j;
 
 
 
-	return 0;
+    return 0;
 }
