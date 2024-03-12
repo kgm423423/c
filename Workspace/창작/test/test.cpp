@@ -1,20 +1,15 @@
 #include <stdio.h>
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
+#include <windows.h>
+#include <conio.h>
 
-using namespace std;
-
-int main()
+int main(void)
 {
-    bool i = true;
+    int key = _getch();
 
+    if (key == '\n')
+        printf("enter");
+    else
+        printf("%d", key);
 
-    bool j = true;
-
-    cout << i+j;
-
-
-
-    return 0;
+	return 0;
 }
