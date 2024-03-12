@@ -47,6 +47,7 @@ void f(int posX, int posY)
         return;
 
     mapArr[posY][posX].checked = true;
+    mapArr[posY][posX].flag = false;
     uncheckedSpace--;
 
     if (mapArr[posY][posX].info == 0) {
@@ -127,25 +128,6 @@ void drawMap()
 {
     system("cls");
 
-    ////////////////////////////////debug
-    /*
-    for(int i=0;i<mapSize;i++) {
-        for(int j=0;j<mapSize;j++) {
-            cout << mapArr[i][j].isBomb << " ";
-        }
-        printf("\n");
-    }
-    printf("\n");
-    for(int i=0;i<mapSize;i++) {
-        for(int j=0;j<mapSize;j++) {
-            cout << mapArr[i][j].info << " ";
-        }
-        printf("\n");
-    }
-    printf("\n");
-    */
-    /////////////////////////////////
-
     for(int i=0;i<mapSize;i++) {
         for(int j=0;j<mapSize;j++) {
             if (selectedPos.y == i && selectedPos.x == j)
@@ -159,10 +141,12 @@ void drawMap()
                         printf("%d ", mapArr[i][j].info);
                 }
                 else
-                printf("o ");
+                printf("бс");
             }
-            else
-                printf("x ");
+            else {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+                printf("в├");
+            }
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
         }
         printf("\n");
@@ -186,7 +170,8 @@ void input()
             f(selectedPos.x,selectedPos.y);
     }
     else if (key == 32) {
-        mapArr[selectedPos.y][selectedPos.x].flag = !mapArr[selectedPos.y][selectedPos.x].flag;
+        if (!mapArr[selectedPos.y][selectedPos.x].checked)
+            mapArr[selectedPos.y][selectedPos.x].flag = !mapArr[selectedPos.y][selectedPos.x].flag;
     }
 	else if(key == 224) {
 		key = _getch();

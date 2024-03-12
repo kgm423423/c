@@ -7,13 +7,9 @@ using namespace std;
 
 int main(void)
 {
-    while (true) {
-         int key = _getch();
-         system("mode con: cols=100 lines=50");
-        printf("%d\n", key);
-    }
-
-
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+    printf("�ââ�\n");
+    printf("_ _ _ \n");
 
 	return 0;
 }

@@ -29,7 +29,7 @@ struct Pos
 int debug=0;
 
 int chance = 0;
-int mapSize = 20;
+int mapSize = 1;
 int mazeSize;
 int eyelevel = 3;
 bool mapMade = false;
@@ -209,7 +209,7 @@ void drawMap()
                     printf("\033[38;2;%d;%d;%dm", 155, 0, 0);
                 else
                     printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
-                printf("1 ");
+                printf("бс");
                 break;
                 case Tag_player:
                 printf("\033[38;2;%d;%d;%dm", 0, 255, 255);
