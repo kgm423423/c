@@ -20,10 +20,12 @@ struct Pos
     int x;
 };
 
-bool gameover = false;
+bool gameover;
 int mapSize;
 Node** mapArr;
-Pos selectedPos = {0,0};
+Pos selectedPos;
+int uncheckedSpace;
+bool mapMade;
 
 bool checkBomb(int i, int j)
 {
@@ -45,6 +47,7 @@ void f(int posX, int posY)
         return;
 
     mapArr[posY][posX].checked = true;
+    uncheckedSpace--;
 
     if (mapArr[posY][posX].info == 0) {
         f(posX-1,posY-1); f(posX,posY-1); f(posX+1,posY-1);
@@ -70,6 +73,14 @@ void select(int posX, int posY)
 
 void makeArr(int mapSizeN)
 {
+    if (mapMade) {
+        for(int i=0; i<mapSize; i++)
+            delete[] mapArr[i];
+
+        delete[] mapArr;
+    }
+    mapMade = true;
+
     mapArr = new Node* [mapSizeN];
 
     for(int i=0; i<mapSizeN; i++)
@@ -89,7 +100,8 @@ void makeMap()
         }
 
     //make bomb
-    int k = (mapSize*mapSize/8) + 1;
+    uncheckedSpace = mapSize*mapSize;
+    int k = (uncheckedSpace/8) + 1;
     while (k != 0) {
         int i = rand() % mapSize;
         int j = rand() % mapSize;
@@ -99,6 +111,7 @@ void makeMap()
 
         mapArr[i][j].isBomb = true;
         k--;
+        uncheckedSpace--;
     }
 
     //info arr
@@ -136,7 +149,7 @@ void drawMap()
     for(int i=0;i<mapSize;i++) {
         for(int j=0;j<mapSize;j++) {
             if (selectedPos.y == i && selectedPos.x == j)
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);\
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 
             if (!mapArr[i][j].flag) {
                 if (mapArr[i][j].checked) {
@@ -154,6 +167,8 @@ void drawMap()
         }
         printf("\n");
     }
+
+    printf("left : %d", uncheckedSpace);
 
     return;
 }
@@ -188,6 +203,11 @@ void input()
         case 'a': select(selectedPos.x-1, selectedPos.y); break;
         case 'd': select(selectedPos.x+1, selectedPos.y); break;
         case 's': select(selectedPos.x, selectedPos.y+1); break;
+
+        case 'W': select(selectedPos.x, selectedPos.y-1); break;
+        case 'A': select(selectedPos.x-1, selectedPos.y); break;
+        case 'D': select(selectedPos.x+1, selectedPos.y); break;
+        case 'S': select(selectedPos.x, selectedPos.y+1); break;
         }
     }
 
@@ -198,18 +218,49 @@ int main()
 {
     ///rand N
     srand((unsigned int)time(NULL));
+    SetConsoleTitle(TEXT("지뢰찾기"));
 
-    ///make Arr
-    scanf("%d", &mapSize);
-    makeArr(mapSize);
-    makeMap();
+    bool restart = true;
 
-    while (!gameover) {
-        drawMap();
-        input();
+    while (restart) {
+        system("cls");
+        gameover = false;
+        selectedPos = {0,0};
+        mapMade = false;
+
+        ///make Arr
+        system("cls");
+        printf("맵 사이즈 선택 : ");
+        scanf("%d", &mapSize);
+        makeArr(mapSize);
+        makeMap();
+
+        while (!gameover && uncheckedSpace != 0) {
+            drawMap();
+            input();
+        }
+        system("cls");
+
+        if (uncheckedSpace == 0)
+            printf("win");
+        else
+            printf("gameover");
+
+        while(true) {
+            int key = _getch();
+            system("cls");
+            printf("다시시작 (Y/N)\n");
+
+            if (key == 121 || key == 89) {
+                restart = true;
+                break;
+            }
+            else if (key == 110 || key == 78) {
+                restart = false;
+                break;
+            }
+        }
     }
-    drawMap();
-
 
     return 0;
 }
