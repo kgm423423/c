@@ -29,7 +29,7 @@ struct Pos
 int debug=0;
 
 int chance = 0;
-int mapSize = 1;
+int mapSize = 20;
 int mazeSize;
 int eyelevel = 3;
 bool mapMade = false;
