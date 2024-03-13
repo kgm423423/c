@@ -1,15 +1,32 @@
 #include <stdio.h>
 #include <iostream>
-#include <windows.h>
-#include <conio.h>
-
+#include <thread>
 using namespace std;
 
-int main(void)
-{
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
-    printf("¢Ã¢Ã¢Ã\n");
-    printf("_ _ _ \n");
+double n = 1;
 
-	return 0;
+void func1() {
+    int i = 1;
+    while (true) {
+        printf("1:%d / %f %f\n", i, i/n*100, n);
+        i++; n++;
+    }
+}
+
+void func2() {
+    int i = 1;
+    while (true) {
+        printf("2:%d / %f %f\n", i, i/n*100, n);
+        i++; n++;
+    }
+}
+
+int main() {
+  thread t1(func1);
+  thread t2(func2);
+
+  t1.join();
+  t2.join();
+
+  return 0;
 }
