@@ -38,6 +38,7 @@ bool gameover = false;
 
 Tag** mapArr;
 Pos playerPos;
+Pos prevPlayerPos;
 Pos enemyPos;
 vector<Pos> route;
 
@@ -110,7 +111,7 @@ bool makeMaze(int i, int j, bool** checkArr)
 
 void makeMap()
 {
-    ///¹è¿­ ÇÒ´ç ÇØÁ¦
+    ///ë°°ì—´ í• ë‹¹ í•´ì œ
     if (mapMade) {
         for(int i=0; i<mapSize; i++)
             delete[] mapArr[i];
@@ -120,19 +121,19 @@ void makeMap()
     mapMade = true;
 
 
-    ///¹è¿­ ¼±¾ð
-    //¹Ì·Î
+    ///ë°°ì—´ ì„ ì–¸
+    //ë¯¸ë¡œ
     mapArr = new Tag* [mazeSize];
     for(int i=0; i<mazeSize; i++)
         mapArr[i] = new Tag[mazeSize];
 
-    //Ã¼Å©¹è¿­
+    //ì²´í¬ë°°ì—´
     bool **checkArr;
     checkArr = new bool* [mapSize];
     for(int i=0; i<mapSize; i++)
         checkArr[i] = new bool[mapSize];
 
-    ///¹è¿­ ÃÊ±âÈ­
+    ///ë°°ì—´ ì´ˆê¸°í™”
     for(int i=0;i<mapSize;i++)
         for(int j=0;j<mapSize;j++) {
             checkArr[i][j] = false;
@@ -146,7 +147,7 @@ void makeMap()
             mapArr[i][j] = Tag_none;
         }
 
-    ///¹Ì·Î »ý¼º
+    ///ë¯¸ë¡œ ìƒì„±
     makeMaze(1,1, checkArr);
     mapArr[1][1] = Tag_player;
     mapArr[mazeSize-1][mazeSize-2] = Tag_endPoint;
@@ -166,6 +167,8 @@ void playerMove(Pos nextPos)
 
 void input()
 {
+     prevPlayerPos = playerPos;
+
     int key = _getch();
 
     mapArr[playerPos.y][playerPos.x] = Tag_none;
@@ -179,7 +182,7 @@ void input()
 		}
 	}
     else {
-        ///¿µ¹® ÀÔ·Â
+        ///ì˜ë¬¸ ìž…ë ¥
         switch (key) {
         case 'w': playerMove({playerPos.x, playerPos.y-1}); break;
         case 'a': playerMove({playerPos.x-1, playerPos.y}); break;
@@ -209,7 +212,7 @@ void drawMap()
                     printf("\033[38;2;%d;%d;%dm", 155, 0, 0);
                 else
                     printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
-                printf("¡á");
+                printf("â– ");
                 break;
                 case Tag_player:
                 printf("\033[38;2;%d;%d;%dm", 0, 255, 255);
@@ -235,8 +238,8 @@ void drawMap()
 
 void drawUI()
 {
-
-    system("cls");
+   printf("\033[H\033[J");
+   printf("\033[?25l");
 
     printf("\033[38;2;%d;%d;%dm", 255, 255, 255);
     printf("[Stage : %d]\n\n",mapSize);
@@ -247,7 +250,7 @@ void drawUI()
 
 void enemyMove()
 {
-    ///ÀÌµ¿°æ·Î ÁöÁ¤
+    ///ì´ë™ê²½ë¡œ ì§€ì •
     route.push_back(playerPos);
     Pos currentPos;
 
@@ -267,7 +270,9 @@ void enemyMove()
     if (chance != 0)
         return;
 
-    ///ÀÌµ¿
+    Pos prevEnemyPos = enemyPos;
+
+    ///ì´ë™
     currentPos = route.front();
     route.erase(route.begin());
 
@@ -275,13 +280,26 @@ void enemyMove()
     mapArr[currentPos.y][currentPos.x] = Tag_enemy;
     enemyPos.x = currentPos.x; enemyPos.y = currentPos.y;
 
-    ///°ÔÀÓ¿À¹ö
+    ///ê²Œìž„ì˜¤ë²„ 1 : ê°™ì€ ì¹¸ì— ë„ì°©
     if (playerPos.x == enemyPos.x && playerPos.y == enemyPos.y)
         gameover = true;
+    ///ê²Œìž„ì˜¤ë²„ 2 : ì„œë¡œ êµì°¨
+    if (playerPos.x == prevEnemyPos.x && playerPos.y == prevEnemyPos.y &&
+        enemyPos.x == prevPlayerPos.x && enemyPos.y == prevPlayerPos.y)
+        gameover = true;
+}
+
+void enableANSI() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;  // ANSI ì‹œí€€ìŠ¤ í™œì„±í™”
+    SetConsoleMode(hOut, dwMode);
 }
 
 int main()
 {
+    enableANSI();
     srand((unsigned int)time(NULL));
     mazeSize = (mapSize*2)+1;
 
@@ -294,7 +312,7 @@ int main()
         route.clear();
         drawUI();
 
-        while (playerPos.x != mazeSize-2 || playerPos.y != mazeSize-1 && !gameover) {
+        while ((playerPos.x != mazeSize-2 || playerPos.y != mazeSize-1) && !gameover) {
             input();
             enemyMove();
             drawUI();
